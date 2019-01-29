@@ -15,10 +15,6 @@
   <Import Project="$(SolutionDir)\NetTopologySuite.Common.props" />
 
   <ItemGroup Condition=" '$(RequiresFrameworkAssemblyReferences)' == 'true' ">
-    <Reference Include="Oracle.DataAccess">
-      <HintPath>C:\Oracle\obe\product\11.2.0\client_1\odp.net\bin\2.x\Oracle.DataAccess.dll</HintPath>
-    </Reference>
-
     <Reference Include="System" />
     <Reference Include="System.Data" />
   </ItemGroup>
