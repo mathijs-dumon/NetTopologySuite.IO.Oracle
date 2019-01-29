@@ -4,7 +4,7 @@
 		<id>NetTopologySuite.IO.Oracle</id>
 		<version>$version$</version>
 		<title>NetTopologySuite IO Library for Oracle</title>
-		<authors>NetTopology Team</authors>    
+		<authors>NetTopologySuite - Team,Holger Laebe</authors>
 		<license type="expression">BSD-3-Clause</license>
 		<projectUrl>https://github.com/NetTopologySuite/NetTopologySuite.IO.Oracle</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
