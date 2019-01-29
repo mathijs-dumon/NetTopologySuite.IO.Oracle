@@ -49,9 +49,6 @@ namespace NetTopologySuite.IO
                 case IPoint point:
                     return Write(point);
 
-                case ILinearRing ring:
-                    return Write(ring);
-
                 case ILineString line:
                     return Write(line);
 
@@ -86,22 +83,6 @@ namespace NetTopologySuite.IO
             {
                 SdoGtype = GType(point),
                 Sdo_Srid = point.SRID,
-                ElemArray = elemInfoList.ToArray(),
-                OrdinatesArray = ordinateList.ToArray(),
-            };
-        }
-
-        private SdoGeometry Write(ILinearRing ring)
-        {
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-
-            ProcessLinear(ring, elemInfoList, ordinateList, 1);
-
-            return new SdoGeometry()
-            {
-                SdoGtype = GType(ring),
-                Sdo_Srid = ring.SRID,
                 ElemArray = elemInfoList.ToArray(),
                 OrdinatesArray = ordinateList.ToArray(),
             };
@@ -200,27 +181,27 @@ namespace NetTopologySuite.IO
                 switch (geom.OgcGeometryType)
                 {
                     case OgcGeometryType.Point:
-                        pos = ProcessPoint(geom as IPoint, elemInfoList, ordinateList, pos);
+                        pos = ProcessPoint((IPoint)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.LineString:
-                        pos = ProcessLinear(geom as ILineString, elemInfoList, ordinateList, pos);
+                        pos = ProcessLinear((ILineString)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.Polygon:
-                        pos = ProcessPolygon(geom as IPolygon, elemInfoList, ordinateList, pos);
+                        pos = ProcessPolygon((IPolygon)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiPoint:
-                        pos = ProcessMultiPoint(geom as IMultiPoint, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiPoint((IMultiPoint)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiLineString:
-                        pos = ProcessMultiLineString(geom as IMultiLineString, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiLineString((IMultiLineString)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiPolygon:
-                        pos = ProcessMultiPolygon(geom as IMultiPolygon, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiPolygon((IMultiPolygon)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     default:
