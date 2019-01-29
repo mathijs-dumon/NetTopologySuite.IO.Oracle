@@ -75,20 +75,21 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(IPoint point)
         {
+            var coord = point.Coordinate;
             var sdoGeometry = new SdoGeometry
             {
                 Point = new SdoPoint
                 {
-                    X = (decimal)point.Coordinate.X,
-                    Y = (decimal)point.Coordinate.Y
+                    X = (decimal)coord.X,
+                    Y = (decimal)coord.Y
                 },
                 Sdo_Srid = point.SRID,
                 SdoGtype = GType(point)
             };
 
-            if (Dimension(point) == 3)
+            if (!double.IsNaN(coord.Z))
             {
-                sdoGeometry.Point.Z = (decimal)point.Coordinate.Z;
+                sdoGeometry.Point.Z = (decimal)coord.Z;
             }
 
             return sdoGeometry;
