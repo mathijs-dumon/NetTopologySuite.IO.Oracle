@@ -154,20 +154,10 @@ namespace NetTopologySuite.IO
 
         private int ProcessPoint(IPoint point, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            elemInfoList.AddRange(new List<decimal> { pos, 1, 1 });
-            var ordinates = new List<decimal>
-            {
-                (decimal)point.X,
-                (decimal)point.Y
-            };
-            if (!double.IsNaN(point.Z))
-            {
-                ordinates.Add((decimal)point.Z);
-            }
-
-            ordinateList.AddRange(ordinates);
-            pos += ordinates.Count;
-            return pos;
+            elemInfoList.Add(pos);
+            elemInfoList.Add(1);
+            elemInfoList.Add(1);
+            return pos + AddOrdinates(point.CoordinateSequence, ordinateList);
         }
 
         private int ProcessLinear(ILineString line, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
