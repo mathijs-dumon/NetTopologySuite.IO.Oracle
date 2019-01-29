@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using GeoAPI.Geometries;
-using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Sdo;
 
 namespace NetTopologySuite.IO
@@ -256,7 +255,10 @@ namespace NetTopologySuite.IO
 
         private int ProcessPolygon(IPolygon polygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            elemInfoList.AddRange(new List<decimal>() { pos, 1003, 1 });
+            elemInfoList.Add(pos);
+            elemInfoList.Add(1003);
+            elemInfoList.Add(1);
+
             var exteriorCoords = polygon.ExteriorRing.Coordinates;
             if (!Algorithm.Orientation.IsCCW(exteriorCoords))
             {
@@ -268,7 +270,10 @@ namespace NetTopologySuite.IO
             pos += exteriorOrdinates.Count;
             foreach (var ring in polygon.InteriorRings)
             {
-                elemInfoList.AddRange(new List<decimal>() { pos, 2003, 1 });
+                elemInfoList.Add(pos);
+                elemInfoList.Add(2003);
+                elemInfoList.Add(1);
+
                 var interiorCoords = ring.Coordinates;
                 if (Algorithm.Orientation.IsCCW(interiorCoords))
                 {
@@ -285,18 +290,19 @@ namespace NetTopologySuite.IO
 
         private int ProcessMultiPoint(IMultiPoint multiPoint, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            elemInfoList.AddRange(new List<decimal>() { pos, 1, multiPoint.NumGeometries });
-            foreach (var point in multiPoint.Geometries)
-            {
-                var p = point as IPoint;
-                var ordinates = new List<decimal> { (decimal)p.X, (decimal)p.Y };
-                if (Dimension(point) == 3)
-                {
-                    ordinates.Add((decimal)p.Z);
-                }
+            int cnt = multiPoint.NumGeometries;
 
-                ordinateList.AddRange(ordinates);
-                pos += ordinates.Count;
+            // (airbreather 2019-01-29) for some reason, IMultiPoint seems to be special: it's not
+            // just ProcessPoint for each point, since that would append to elemInfoList multiple
+            // times.  instead, elemInfoList gets incremented just once.  *shrugs*.
+            elemInfoList.Add(pos);
+            elemInfoList.Add(1);
+            elemInfoList.Add(cnt);
+
+            for (int i = 0; i < cnt; i++)
+            {
+                var point = (IPoint)multiPoint.GetGeometryN(i);
+                pos += AddOrdinates(point.CoordinateSequence, ordinateList);
             }
 
             return pos;
@@ -304,8 +310,10 @@ namespace NetTopologySuite.IO
 
         private int ProcessMultiLineString(IMultiLineString multiLineString, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            foreach (ILineString line in multiLineString.Geometries)
+            int cnt = multiLineString.NumGeometries;
+            for (int i = 0; i < cnt; i++)
             {
+                var line = (ILineString)multiLineString.GetGeometryN(i);
                 pos += ProcessLinear(line, elemInfoList, ordinateList, pos);
             }
 
@@ -314,9 +322,11 @@ namespace NetTopologySuite.IO
 
         private int ProcessMultiPolygon(IMultiPolygon multiPolygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            foreach (var poly in multiPolygon.Geometries)
+            int cnt = multiPolygon.NumGeometries;
+            for (int i = 0; i < cnt; i++)
             {
-                pos = ProcessPolygon(poly as IPolygon, elemInfoList, ordinateList, pos);
+                var poly = (IPolygon)multiPolygon.GetGeometryN(i);
+                pos = ProcessPolygon(poly, elemInfoList, ordinateList, pos);
             }
 
             return pos;
