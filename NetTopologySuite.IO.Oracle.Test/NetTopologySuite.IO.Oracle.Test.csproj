@@ -5,9 +5,7 @@
     <TargetFrameworks>net45</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
     <IsTestProject>true</IsTestProject>
-    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-      None
-    </ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
   <Import Project="$(SolutionDir)NetTopologySuite.Common.props" />
@@ -19,8 +17,8 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\NetTopologySuite.IO.Oracle\NetTopologySuite.IO.Oracle.csproj" />    
+    <ProjectReference Include="$(SolutionDir)NetTopologySuite.IO.Oracle\NetTopologySuite.IO.Oracle.csproj" />
   </ItemGroup>
 </Project>
