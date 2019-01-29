@@ -8,23 +8,21 @@
 		<license type="expression">BSD-3-Clause</license>
 		<projectUrl>https://github.com/NetTopologySuite/NetTopologySuite.IO.Oracle</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>
-      This package contains the Oracle IO library with experimental writer implementation
-		</description>
+		<description>This package contains the Oracle IO library with experimental writer implementation</description>
 		<summary>Oracle IO library for NetTopologySuite</summary>
 		<tags>NTS Oracle</tags>
 		<language>en-US</language>
 		<frameworkAssemblies>
-			<frameworkAssembly assemblyName="System" targetFramework="" />
-			<frameworkAssembly assemblyName="System.Core" targetFramework="" />
+			<frameworkAssembly assemblyName="System" />
+			<frameworkAssembly assemblyName="System.Data" />
 		</frameworkAssemblies>
 		<dependencies>
 			<dependency id="NetTopologySuite" version="[1.15.1,2.0)" />
 		</dependencies>
 	</metadata>
 	<files>
-    <file src="Release\AnyCPU\net45\NetTopologySuite.IO.Oracle.dll" target="lib\net45" />
-    <file src="Release\AnyCPU\net45\NetTopologySuite.IO.Oracle.pdb" target="lib\net45" />
-    <file src="Release\AnyCPU\net45\NetTopologySuite.IO.Oracle.xml" target="lib\net45" />	
+		<file src="Release\AnyCPU\**\NetTopologySuite.IO.Oracle.dll" target="lib" />
+		<file src="Release\AnyCPU\**\NetTopologySuite.IO.Oracle.pdb" target="lib" />
+		<file src="Release\AnyCPU\**\NetTopologySuite.IO.Oracle.xml" target="lib" />
 	</files>
 </package>
