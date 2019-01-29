@@ -20,17 +20,16 @@ namespace NetTopologySuite.IO
 
         private int Dimension(IGeometry geom)
         {
-            var d = Double.IsNaN(geom.Coordinate.Z) ? 2 : 3;
-            return d;
+            return double.IsNaN(geom.Coordinate.Z) ? 2 : 3;
         }
 
         private int GType(IGeometry geom)
         {
             int d = Dimension(geom) * 1000;
             const int l = 0;
-            var tt = (int)Template(geom);
+            int tt = (int)Template(geom);
 
-            return (d + l + tt);
+            return d + l + tt;
         }
 
         /// <summary>
@@ -88,7 +87,9 @@ namespace NetTopologySuite.IO
             };
 
             if (Dimension(point) == 3)
+            {
                 sdoGeometry.Point.Z = (decimal)point.Coordinate.Z;
+            }
 
             return sdoGeometry;
         }
@@ -162,10 +163,11 @@ namespace NetTopologySuite.IO
                 (decimal)point.X,
                 (decimal)point.Y
             };
-            if (!Double.IsNaN(point.Z))
+            if (!double.IsNaN(point.Z))
             {
                 ordinates.Add((decimal)point.Z);
             }
+
             ordinateList.AddRange(ordinates);
             pos += ordinates.Count;
             return pos;
@@ -184,9 +186,11 @@ namespace NetTopologySuite.IO
         {
             elemInfoList.AddRange(new List<decimal>() { pos, 1003, 1 });
             var exteriorCoords = polygon.ExteriorRing.Coordinates;
-            if (!Algorithm.Orientation.IsCCW(exteriorCoords)) {
+            if (!Algorithm.Orientation.IsCCW(exteriorCoords))
+            {
                 Array.Reverse(exteriorCoords);
             }
+
             var exteriorOrdinates = GetOrdinates(exteriorCoords);
             ordinateList.AddRange(exteriorOrdinates);
             pos += exteriorOrdinates.Count;
@@ -194,9 +198,11 @@ namespace NetTopologySuite.IO
             {
                 elemInfoList.AddRange(new List<decimal>() { pos, 2003, 1 });
                 var interiorCoords = ring.Coordinates;
-                if (Algorithm.Orientation.IsCCW(interiorCoords)) {
+                if (Algorithm.Orientation.IsCCW(interiorCoords))
+                {
                     Array.Reverse(interiorCoords);
                 }
+
                 var interiorOrdinates = GetOrdinates(interiorCoords);
                 ordinateList.AddRange(interiorOrdinates);
                 pos += interiorOrdinates.Count;
@@ -229,7 +235,10 @@ namespace NetTopologySuite.IO
                 var p = point as IPoint;
                 var ordinates = new List<decimal> { (decimal)p.X, (decimal)p.Y };
                 if (Dimension(point) == 3)
+                {
                     ordinates.Add((decimal)p.Z);
+                }
+
                 ordinateList.AddRange(ordinates);
                 pos += ordinates.Count;
             }
@@ -270,7 +279,6 @@ namespace NetTopologySuite.IO
         {
             var sdoGeometry = new SdoGeometry { SdoGtype = GType(multiPolygon), Sdo_Srid = multiPolygon.SRID };
 
-
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
             var pos = 1;
@@ -303,25 +311,32 @@ namespace NetTopologySuite.IO
 
             foreach (var geom in geometryCollection.Geometries)
             {
-                switch (geom.OgcGeometryType) {
+                switch (geom.OgcGeometryType)
+                {
                     case OgcGeometryType.Polygon:
                         pos = ProcessPolygon(geom as IPolygon, elemInfoList, ordinateList, pos);
                         break;
+
                     case OgcGeometryType.LineString:
                         pos = ProcessLinear(geom as ILineString, elemInfoList, ordinateList, pos);
-                        break;                   
+                        break;
+
                     case OgcGeometryType.Point:
                         pos = ProcessPoint(geom as Point, elemInfoList, ordinateList, pos);
                         break;
+
                     case OgcGeometryType.MultiPoint:
                         pos = ProcessMultiPoint(geom as MultiPoint, elemInfoList, ordinateList, pos);
                         break;
+
                     case OgcGeometryType.MultiPolygon:
                         pos = ProcessMultiPolygon(geom as MultiPolygon, elemInfoList, ordinateList, pos);
                         break;
+
                     case OgcGeometryType.MultiLineString:
                         pos = ProcessMultiLineString(geom as MultiLineString, elemInfoList, ordinateList, pos);
                         break;
+
                     default:
                         throw new ArgumentException("Geometry not supported in GeometryCollection: " + geom);
                 }
@@ -342,7 +357,9 @@ namespace NetTopologySuite.IO
                 ords.Add((decimal)lineString.GetCoordinateN(i).X);
                 ords.Add((decimal)lineString.GetCoordinateN(i).Y);
                 if (Dimension(lineString) == 3)
+                {
                     ords.Add((decimal)lineString.GetCoordinateN(i).Z);
+                }
             }
 
             return ords;
@@ -356,8 +373,10 @@ namespace NetTopologySuite.IO
             {
                 ords.Add((decimal)coords[i].X);
                 ords.Add((decimal)coords[i].Y);
-                if (!Double.IsNaN(coords[i].Z))
+                if (!double.IsNaN(coords[i].Z))
+                {
                     ords.Add((decimal)coords[i].Z);
+                }
             }
 
             return ords;
