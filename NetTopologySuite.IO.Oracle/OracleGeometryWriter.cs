@@ -304,14 +304,14 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(IGeometryCollection geometryCollection)
         {
-            var sdoGeometry = new SdoGeometry { SdoGtype = GType(geometryCollection), Sdo_Srid = geometryCollection.SRID };
-
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
-            var pos = 1;
+            int pos = 1;
 
-            foreach (var geom in geometryCollection.Geometries)
+            int cnt = geometryCollection.NumGeometries;
+            for (int i = 0; i < cnt; i++)
             {
+                var geom = geometryCollection.GetGeometryN(i);
                 switch (geom.OgcGeometryType)
                 {
                     case OgcGeometryType.Polygon:
@@ -343,10 +343,13 @@ namespace NetTopologySuite.IO
                 }
             }
 
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
+            return new SdoGeometry
+            {
+                SdoGtype = GType(geometryCollection),
+                Sdo_Srid = geometryCollection.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
         }
 
         private List<decimal> GetOrdinates(ILineString lineString)
