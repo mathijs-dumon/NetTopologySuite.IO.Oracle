@@ -107,17 +107,17 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(ILineString ring)
+        private SdoGeometry Write(ILineString line)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
 
-            ProcessLinear(ring, elemInfoList, ordinateList, 1);
+            ProcessLinear(line, elemInfoList, ordinateList, 1);
 
             return new SdoGeometry()
             {
-                SdoGtype = GType(ring),
-                Sdo_Srid = ring.SRID,
+                SdoGtype = GType(line),
+                Sdo_Srid = line.SRID,
                 ElemArray = elemInfoList.ToArray(),
                 OrdinatesArray = ordinateList.ToArray(),
             };
