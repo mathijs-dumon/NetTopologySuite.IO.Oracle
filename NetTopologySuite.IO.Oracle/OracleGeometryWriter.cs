@@ -3,36 +3,20 @@ using System.Collections.Generic;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Sdo;
-using Oracle.DataAccess.Client;
 
 namespace NetTopologySuite.IO
 {
-    /**
-     * 
-     * Translates a NTS Geometry into an Oracle UDT. 
-     * 
-     */
+    /// <summary>
+    /// Translates a NTS Geometry into an Oracle UDT.
+    /// </summary>
     public class OracleGeometryWriter
     {
         private const int SridNull = -1;
-        private int _srid = SridNull;
-
-        /// <summary>
-        /// Explicit paramter less constructor
-        /// </summary>
-        public OracleGeometryWriter()
-        {
-            SRID = SridNull;
-        }
 
         /// <summary>
         /// Property for spatial reference system
         /// </summary>
-        public int SRID
-        {
-            get { return _srid; }
-            set { _srid = value; }
-        }
+        public int SRID { get; set; } = SridNull;
 
         private int Dimension(IGeometry geom)
         {
@@ -57,27 +41,37 @@ namespace NetTopologySuite.IO
         /// <returns>SdoGeometry</returns>
         public SdoGeometry Write(IGeometry geometry)
         {
-            if (geometry.IsEmpty)
+            if (geometry?.IsEmpty != false)
+            {
                 return null;
+            }
 
-            if (geometry is IPoint)
-                return Write(geometry as IPoint);
-            if (geometry is ILinearRing)
-                return Write(geometry as ILinearRing);
-            if (geometry is ILineString)
-                return Write(geometry as ILineString);
-            if (geometry is IPolygon)
-                return Write(geometry as IPolygon);
-            if (geometry is IMultiPoint)
-                return Write(geometry as IMultiPoint);
-            if (geometry is IMultiLineString)
-                return Write(geometry as IMultiLineString);
-            if (geometry is IMultiPolygon)
-                return Write(geometry as IMultiPolygon);
-            if (geometry is IGeometryCollection)
-                return Write(geometry as IGeometryCollection);
+            switch (geometry)
+            {
+                case IPoint point:
+                    return Write(point);
 
-            throw new ArgumentException("Geometry not supported: " + geometry);
+                case ILinearRing ring:
+                    return Write(ring);
+
+                case ILineString line:
+                    return Write(line);
+
+                case IPolygon polygon:
+                    return Write(polygon);
+
+                case IMultiPoint multiPoint:
+                    return Write(multiPoint);
+
+                case IMultiPolygon multiPolygon:
+                    return Write(multiPolygon);
+
+                case IGeometryCollection collection:
+                    return Write(collection);
+
+                default:
+                    throw new ArgumentException("Geometry not supported: " + geometry);
+            }
         }
 
         private SdoGeometry Write(IPoint point)
@@ -131,7 +125,7 @@ namespace NetTopologySuite.IO
             var ordinateList = new List<decimal>();
             var pos = 1;
 
-            pos = ProcessLinear(ring, elemInfoList, ordinateList, pos);            
+            pos = ProcessLinear(ring, elemInfoList, ordinateList, pos);
 
             sdoGeometry.ElemArray = elemInfoList.ToArray();
             sdoGeometry.OrdinatesArray = ordinateList.ToArray();
@@ -372,45 +366,38 @@ namespace NetTopologySuite.IO
 
         private SdoGTemplate Template(IGeometry geom)
         {
-            if (geom == null)
+            switch (geom)
             {
-                return SdoGTemplate.Unknown;
-            }
-            if (geom is IPoint)
-            {
-                return SdoGTemplate.Coordinate;
-            }
-            if (geom is ILineString)
-            {
-                return SdoGTemplate.Line;
-            }
-            if (geom is IPolygon)
-            {
-                return SdoGTemplate.Polygon;
-            }
-            if (geom is IMultiPoint)
-            {
-                return SdoGTemplate.MultiPoint;
-            }
-            if (geom is IMultiLineString)
-            {
-                return SdoGTemplate.MultiLine;
-            }
-            if (geom is IMultiPolygon)
-            {
-                return SdoGTemplate.MultiPolygon;
-            }
-            if (geom is IGeometryCollection)
-            {
-                return SdoGTemplate.Collection;
-            }
+                case null:
+                    return SdoGTemplate.Unknown;
 
-            throw new ArgumentException("Cannot encode JTS "
-                + geom.GeometryType + " as SDO_GTEMPLATE "
-                + "(Limitied to Point, Line, Polygon, GeometryCollection, MultiPoint,"
-                + " MultiLineString and MultiPolygon)");
-        }       
+                case IPoint _:
+                    return SdoGTemplate.Coordinate;
+
+                case ILineString _:
+                    return SdoGTemplate.Line;
+
+                case IPolygon _:
+                    return SdoGTemplate.Polygon;
+
+                case IMultiPoint _:
+                    return SdoGTemplate.MultiPoint;
+
+                case IMultiLineString _:
+                    return SdoGTemplate.MultiLine;
+
+                case IMultiPolygon _:
+                    return SdoGTemplate.MultiPolygon;
+
+                case IGeometryCollection _:
+                    return SdoGTemplate.Collection;
+
+                default:
+                    throw new ArgumentException("Cannot encode JTS "
+                        + geom.GeometryType + " as SDO_GTEMPLATE "
+                        + "(Limitied to Point, Line, Polygon, GeometryCollection, MultiPoint,"
+                        + " MultiLineString and MultiPolygon)");
+            }
+        }
     }
 }
-
-
