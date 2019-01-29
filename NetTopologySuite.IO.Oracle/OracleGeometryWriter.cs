@@ -62,6 +62,9 @@ namespace NetTopologySuite.IO
                 case IMultiPoint multiPoint:
                     return Write(multiPoint);
 
+                case IMultiLineString multiLineString:
+                    return Write(multiLineString);
+
                 case IMultiPolygon multiPolygon:
                     return Write(multiPolygon);
 
@@ -137,6 +140,104 @@ namespace NetTopologySuite.IO
             };
         }
 
+        private SdoGeometry Write(IMultiPoint multiPoint)
+        {
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessMultiPoint(multiPoint, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry
+            {
+                SdoGtype = GType(multiPoint),
+                Sdo_Srid = multiPoint.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
+        }
+
+        private SdoGeometry Write(IMultiLineString multiLineString)
+        {
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessMultiLineString(multiLineString, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry
+            {
+                SdoGtype = GType(multiLineString),
+                Sdo_Srid = multiLineString.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
+        }
+
+        private SdoGeometry Write(IMultiPolygon multiPolygon)
+        {
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessMultiPolygon(multiPolygon, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry
+            {
+                SdoGtype = GType(multiPolygon),
+                Sdo_Srid = multiPolygon.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
+        }
+
+        private SdoGeometry Write(IGeometryCollection geometryCollection)
+        {
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+            int pos = 1;
+
+            int cnt = geometryCollection.NumGeometries;
+            for (int i = 0; i < cnt; i++)
+            {
+                var geom = geometryCollection.GetGeometryN(i);
+                switch (geom.OgcGeometryType)
+                {
+                    case OgcGeometryType.Point:
+                        pos = ProcessPoint(geom as Point, elemInfoList, ordinateList, pos);
+                        break;
+
+                    case OgcGeometryType.LineString:
+                        pos = ProcessLinear(geom as ILineString, elemInfoList, ordinateList, pos);
+                        break;
+
+                    case OgcGeometryType.Polygon:
+                        pos = ProcessPolygon(geom as IPolygon, elemInfoList, ordinateList, pos);
+                        break;
+
+                    case OgcGeometryType.MultiPoint:
+                        pos = ProcessMultiPoint(geom as MultiPoint, elemInfoList, ordinateList, pos);
+                        break;
+
+                    case OgcGeometryType.MultiLineString:
+                        pos = ProcessMultiLineString(geom as MultiLineString, elemInfoList, ordinateList, pos);
+                        break;
+
+                    case OgcGeometryType.MultiPolygon:
+                        pos = ProcessMultiPolygon(geom as MultiPolygon, elemInfoList, ordinateList, pos);
+                        break;
+
+                    default:
+                        throw new ArgumentException("Geometry not supported in GeometryCollection: " + geom);
+                }
+            }
+
+            return new SdoGeometry
+            {
+                SdoGtype = GType(geometryCollection),
+                Sdo_Srid = geometryCollection.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
+        }
+
         private int ProcessPoint(IPoint point, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
@@ -182,22 +283,6 @@ namespace NetTopologySuite.IO
             return pos;
         }
 
-        private SdoGeometry Write(IMultiPoint multiPoint)
-        {
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-
-            ProcessMultiPoint(multiPoint, elemInfoList, ordinateList, 1);
-
-            return new SdoGeometry
-            {
-                SdoGtype = GType(multiPoint),
-                Sdo_Srid = multiPoint.SRID,
-                ElemArray = elemInfoList.ToArray(),
-                OrdinatesArray = ordinateList.ToArray(),
-            };
-        }
-
         private int ProcessMultiPoint(IMultiPoint multiPoint, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.AddRange(new List<decimal>() { pos, 1, multiPoint.NumGeometries });
@@ -217,22 +302,6 @@ namespace NetTopologySuite.IO
             return pos;
         }
 
-        private SdoGeometry Write(IMultiLineString multiLineString)
-        {
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-
-            ProcessMultiLineString(multiLineString, elemInfoList, ordinateList, 1);
-
-            return new SdoGeometry
-            {
-                SdoGtype = GType(multiLineString),
-                Sdo_Srid = multiLineString.SRID,
-                ElemArray = elemInfoList.ToArray(),
-                OrdinatesArray = ordinateList.ToArray(),
-            };
-        }
-
         private int ProcessMultiLineString(IMultiLineString multiLineString, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             foreach (ILineString line in multiLineString.Geometries)
@@ -243,22 +312,6 @@ namespace NetTopologySuite.IO
             return pos;
         }
 
-        private SdoGeometry Write(IMultiPolygon multiPolygon)
-        {
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-
-            ProcessMultiPolygon(multiPolygon, elemInfoList, ordinateList, 1);
-
-            return new SdoGeometry
-            {
-                SdoGtype = GType(multiPolygon),
-                Sdo_Srid = multiPolygon.SRID,
-                ElemArray = elemInfoList.ToArray(),
-                OrdinatesArray = ordinateList.ToArray(),
-            };
-        }
-
         private int ProcessMultiPolygon(IMultiPolygon multiPolygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             foreach (var poly in multiPolygon.Geometries)
@@ -267,56 +320,6 @@ namespace NetTopologySuite.IO
             }
 
             return pos;
-        }
-
-        private SdoGeometry Write(IGeometryCollection geometryCollection)
-        {
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-            int pos = 1;
-
-            int cnt = geometryCollection.NumGeometries;
-            for (int i = 0; i < cnt; i++)
-            {
-                var geom = geometryCollection.GetGeometryN(i);
-                switch (geom.OgcGeometryType)
-                {
-                    case OgcGeometryType.Polygon:
-                        pos = ProcessPolygon(geom as IPolygon, elemInfoList, ordinateList, pos);
-                        break;
-
-                    case OgcGeometryType.LineString:
-                        pos = ProcessLinear(geom as ILineString, elemInfoList, ordinateList, pos);
-                        break;
-
-                    case OgcGeometryType.Point:
-                        pos = ProcessPoint(geom as Point, elemInfoList, ordinateList, pos);
-                        break;
-
-                    case OgcGeometryType.MultiPoint:
-                        pos = ProcessMultiPoint(geom as MultiPoint, elemInfoList, ordinateList, pos);
-                        break;
-
-                    case OgcGeometryType.MultiPolygon:
-                        pos = ProcessMultiPolygon(geom as MultiPolygon, elemInfoList, ordinateList, pos);
-                        break;
-
-                    case OgcGeometryType.MultiLineString:
-                        pos = ProcessMultiLineString(geom as MultiLineString, elemInfoList, ordinateList, pos);
-                        break;
-
-                    default:
-                        throw new ArgumentException("Geometry not supported in GeometryCollection: " + geom);
-                }
-            }
-
-            return new SdoGeometry
-            {
-                SdoGtype = GType(geometryCollection),
-                Sdo_Srid = geometryCollection.SRID,
-                ElemArray = elemInfoList.ToArray(),
-                OrdinatesArray = ordinateList.ToArray(),
-            };
         }
 
         private int AddOrdinates(ICoordinateSequence sequence, List<decimal> ords)
