@@ -75,24 +75,18 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(IPoint point)
         {
-            var coord = point.Coordinate;
-            var sdoGeometry = new SdoGeometry
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessPoint(point, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry()
             {
-                Point = new SdoPoint
-                {
-                    X = (decimal)coord.X,
-                    Y = (decimal)coord.Y
-                },
+                SdoGtype = GType(point),
                 Sdo_Srid = point.SRID,
-                SdoGtype = GType(point)
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
             };
-
-            if (!double.IsNaN(coord.Z))
-            {
-                sdoGeometry.Point.Z = (decimal)coord.Z;
-            }
-
-            return sdoGeometry;
         }
 
         private SdoGeometry Write(ILinearRing ring)
@@ -113,43 +107,34 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(ILineString ring)
         {
-            var sdoGeometry = new SdoGeometry()
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessLinear(ring, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry()
             {
                 SdoGtype = GType(ring),
                 Sdo_Srid = ring.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
             };
-
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-            var pos = 1;
-
-            pos = ProcessLinear(ring, elemInfoList, ordinateList, pos);
-
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
         }
-
 
         private SdoGeometry Write(IPolygon polygon)
         {
-            var sdoGeometry = new SdoGeometry
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessPolygon(polygon, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry
             {
                 SdoGtype = GType(polygon),
                 Sdo_Srid = polygon.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
             };
-
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-            var pos = 1;
-
-            pos = ProcessPolygon(polygon, elemInfoList, ordinateList, pos);
-
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
         }
 
         private int ProcessPoint(IPoint point, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
@@ -199,18 +184,18 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(IMultiPoint multiPoint)
         {
-            var sdoGeometry = new SdoGeometry { SdoGtype = GType(multiPoint), Sdo_Srid = multiPoint.SRID };
-
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
-            var pos = 1;
 
-            pos = ProcessMultiPoint(multiPoint, elemInfoList, ordinateList, pos);
+            ProcessMultiPoint(multiPoint, elemInfoList, ordinateList, 1);
 
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
+            return new SdoGeometry
+            {
+                SdoGtype = GType(multiPoint),
+                Sdo_Srid = multiPoint.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
         }
 
         private int ProcessMultiPoint(IMultiPoint multiPoint, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
@@ -258,20 +243,20 @@ namespace NetTopologySuite.IO
             return pos;
         }
 
-        SdoGeometry Write(IMultiPolygon multiPolygon)
+        private SdoGeometry Write(IMultiPolygon multiPolygon)
         {
-            var sdoGeometry = new SdoGeometry { SdoGtype = GType(multiPolygon), Sdo_Srid = multiPolygon.SRID };
-
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
-            var pos = 1;
 
-            pos = ProcessMultiPolygon(multiPolygon, elemInfoList, ordinateList, pos);
+            ProcessMultiPolygon(multiPolygon, elemInfoList, ordinateList, 1);
 
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
+            return new SdoGeometry
+            {
+                SdoGtype = GType(multiPolygon),
+                Sdo_Srid = multiPolygon.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
         }
 
         private int ProcessMultiPolygon(IMultiPolygon multiPolygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
@@ -367,7 +352,6 @@ namespace NetTopologySuite.IO
 
             return ords;
         }
-
 
         private SdoGTemplate Template(IGeometry geom)
         {
