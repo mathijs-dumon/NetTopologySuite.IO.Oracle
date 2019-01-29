@@ -63,7 +63,7 @@ namespace NetTopologySuite.IO.UdtBase
         {
             if (OracleUdt.IsDBNull(_connection, _pUdt, oracleColumnName))
             {
-                if (default(TUser) is ValueType)
+                if (default(TUser) != null)
                 {
                     throw new Exception(ErrorMessageHead + oracleColumnName + " of value type " +
                                         typeof(TUser));
@@ -79,7 +79,7 @@ namespace NetTopologySuite.IO.UdtBase
         {
             if (OracleUdt.IsDBNull(_connection, _pUdt, oracleColumnId))
             {
-                if (default(TUser) is ValueType)
+                if (default(TUser) != null)
                 {
                     throw new Exception(ErrorMessageHead + oracleColumnId.ToString() + " of value type " +
                                         typeof(TUser));
