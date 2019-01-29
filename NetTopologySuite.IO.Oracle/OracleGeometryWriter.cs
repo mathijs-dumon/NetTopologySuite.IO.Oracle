@@ -24,11 +24,7 @@ namespace NetTopologySuite.IO
 
         private int GType(IGeometry geom)
         {
-            int d = Dimension(geom) * 1000;
-            const int l = 0;
-            int tt = (int)Template(geom);
-
-            return d + l + tt;
+            return Dimension(geom) * 1000 + (int)Template(geom);
         }
 
         /// <summary>
@@ -240,30 +236,22 @@ namespace NetTopologySuite.IO
             elemInfoList.Add(1003);
             elemInfoList.Add(1);
 
-            var exteriorCoords = polygon.ExteriorRing.Coordinates;
-            if (!Algorithm.Orientation.IsCCW(exteriorCoords))
-            {
-                Array.Reverse(exteriorCoords);
-            }
+            var exteriorRingCoords = polygon.ExteriorRing.CoordinateSequence;
+            pos += Algorithm.Orientation.IsCCW(exteriorRingCoords)
+                ? AddOrdinates(exteriorRingCoords, ordinateList)
+                : AddOrdinatesInReverse(exteriorRingCoords, ordinateList);
 
-            var exteriorOrdinates = GetOrdinates(exteriorCoords);
-            ordinateList.AddRange(exteriorOrdinates);
-            pos += exteriorOrdinates.Count;
-            foreach (var ring in polygon.InteriorRings)
+            int interiorRingCount = polygon.NumInteriorRings;
+            for (int i = 0; i < interiorRingCount; i++)
             {
                 elemInfoList.Add(pos);
                 elemInfoList.Add(2003);
                 elemInfoList.Add(1);
 
-                var interiorCoords = ring.Coordinates;
-                if (Algorithm.Orientation.IsCCW(interiorCoords))
-                {
-                    Array.Reverse(interiorCoords);
-                }
-
-                var interiorOrdinates = GetOrdinates(interiorCoords);
-                ordinateList.AddRange(interiorOrdinates);
-                pos += interiorOrdinates.Count;
+                var interiorRingCoords = polygon.GetInteriorRingN(i).CoordinateSequence;
+                pos += Algorithm.Orientation.IsCCW(interiorRingCoords)
+                    ? AddOrdinatesInReverse(interiorRingCoords, ordinateList)
+                    : AddOrdinates(interiorRingCoords, ordinateList);
             }
 
             return pos;
@@ -330,21 +318,22 @@ namespace NetTopologySuite.IO
             return numOfPoints * dimension;
         }
 
-        private List<decimal> GetOrdinates(Coordinate[] coords)
+        private int AddOrdinatesInReverse(ICoordinateSequence sequence, List<decimal> ords)
         {
-            var ords = new List<decimal>();
-            var numOfPoints = coords.Length;
-            for (var i = 0; i < numOfPoints; i++)
+            int dimension = sequence.Dimension;
+            int numOfPoints = sequence.Count;
+
+            for (int i = numOfPoints - 1; i >= 0; i--)
             {
-                ords.Add((decimal)coords[i].X);
-                ords.Add((decimal)coords[i].Y);
-                if (!double.IsNaN(coords[i].Z))
+                ords.Add((decimal)sequence.GetX(i));
+                ords.Add((decimal)sequence.GetY(i));
+                if (dimension == 3)
                 {
-                    ords.Add((decimal)coords[i].Z);
+                    ords.Add((decimal)sequence.GetOrdinate(i, Ordinate.Z));
                 }
             }
 
-            return ords;
+            return numOfPoints * dimension;
         }
 
         private SdoGTemplate Template(IGeometry geom)
