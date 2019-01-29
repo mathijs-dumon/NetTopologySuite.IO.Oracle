@@ -97,22 +97,18 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(ILinearRing ring)
         {
-            var sdoGeometry = new SdoGeometry()
+            var elemInfoList = new List<decimal>();
+            var ordinateList = new List<decimal>();
+
+            ProcessLinear(ring, elemInfoList, ordinateList, 1);
+
+            return new SdoGeometry()
             {
                 SdoGtype = GType(ring),
                 Sdo_Srid = ring.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
             };
-
-            var elemInfoList = new List<decimal>();
-            var ordinateList = new List<decimal>();
-            var pos = 1;
-
-            pos = ProcessLinear(ring, elemInfoList, ordinateList, pos);
-
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
         }
 
         private SdoGeometry Write(ILineString ring)
@@ -174,13 +170,12 @@ namespace NetTopologySuite.IO
             return pos;
         }
 
-        private int ProcessLinear(ILineString ring, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessLinear(ILineString line, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            elemInfoList.AddRange(new List<decimal> { pos, 2, 1 });
-            var ordinates = GetOrdinates(ring);
-            ordinateList.AddRange(ordinates);
-            pos += ordinates.Count;
-            return pos;
+            elemInfoList.Add(pos);
+            elemInfoList.Add(2);
+            elemInfoList.Add(1);
+            return pos + AddOrdinates(line.CoordinateSequence, ordinateList);
         }
 
         private int ProcessPolygon(IPolygon polygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
@@ -249,28 +244,25 @@ namespace NetTopologySuite.IO
 
         private SdoGeometry Write(IMultiLineString multiLineString)
         {
-            var sdoGeometry = new SdoGeometry { SdoGtype = GType(multiLineString), Sdo_Srid = multiLineString.SRID };
-
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
-            var pos = 1;
 
-            pos = ProcessMultiLineString(multiLineString, elemInfoList, ordinateList, pos);
+            ProcessMultiLineString(multiLineString, elemInfoList, ordinateList, 1);
 
-            sdoGeometry.ElemArray = elemInfoList.ToArray();
-            sdoGeometry.OrdinatesArray = ordinateList.ToArray();
-
-            return sdoGeometry;
+            return new SdoGeometry
+            {
+                SdoGtype = GType(multiLineString),
+                Sdo_Srid = multiLineString.SRID,
+                ElemArray = elemInfoList.ToArray(),
+                OrdinatesArray = ordinateList.ToArray(),
+            };
         }
 
         private int ProcessMultiLineString(IMultiLineString multiLineString, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
-            foreach (var line in multiLineString.Geometries)
+            foreach (ILineString line in multiLineString.Geometries)
             {
-                elemInfoList.AddRange(new List<decimal>() { pos, 2, 1 });
-                var ordinates = GetOrdinates(line as ILineString);
-                ordinateList.AddRange(ordinates);
-                pos += ordinates.Count;
+                pos += ProcessLinear(line, elemInfoList, ordinateList, pos);
             }
 
             return pos;
@@ -352,21 +344,21 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private List<decimal> GetOrdinates(ILineString lineString)
+        private int AddOrdinates(ICoordinateSequence sequence, List<decimal> ords)
         {
-            var ords = new List<decimal>();
-            var numOfPoints = lineString.NumPoints;
-            for (var i = 0; i < numOfPoints; i++)
+            int dimension = sequence.Dimension;
+            int numOfPoints = sequence.Count;
+            for (int i = 0; i < numOfPoints; i++)
             {
-                ords.Add((decimal)lineString.GetCoordinateN(i).X);
-                ords.Add((decimal)lineString.GetCoordinateN(i).Y);
-                if (Dimension(lineString) == 3)
+                ords.Add((decimal)sequence.GetX(i));
+                ords.Add((decimal)sequence.GetY(i));
+                if (dimension == 3)
                 {
-                    ords.Add((decimal)lineString.GetCoordinateN(i).Z);
+                    ords.Add((decimal)sequence.GetOrdinate(i, Ordinate.Z));
                 }
             }
 
-            return ords;
+            return numOfPoints * dimension;
         }
 
         private List<decimal> GetOrdinates(Coordinate[] coords)
