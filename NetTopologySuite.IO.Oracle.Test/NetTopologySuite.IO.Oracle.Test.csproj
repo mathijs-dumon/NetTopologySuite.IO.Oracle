@@ -3,9 +3,9 @@
   <PropertyGroup>
     <SolutionDir Condition=" '$(SolutionDir)' == '' ">$(ProjectDir)..\</SolutionDir>
     <TargetFramework>net45</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
     <SignAssembly>false</SignAssembly>
     <IsTestProject>true</IsTestProject>
-    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
   <Import Project="$(SolutionDir)NetTopologySuite.Common.props" />
