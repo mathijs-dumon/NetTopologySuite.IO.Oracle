@@ -201,7 +201,7 @@ namespace NetTopologySuite.IO
                 switch (geom.OgcGeometryType)
                 {
                     case OgcGeometryType.Point:
-                        pos = ProcessPoint(geom as Point, elemInfoList, ordinateList, pos);
+                        pos = ProcessPoint(geom as IPoint, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.LineString:
@@ -213,15 +213,15 @@ namespace NetTopologySuite.IO
                         break;
 
                     case OgcGeometryType.MultiPoint:
-                        pos = ProcessMultiPoint(geom as MultiPoint, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiPoint(geom as IMultiPoint, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiLineString:
-                        pos = ProcessMultiLineString(geom as MultiLineString, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiLineString(geom as IMultiLineString, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiPolygon:
-                        pos = ProcessMultiPolygon(geom as MultiPolygon, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiPolygon(geom as IMultiPolygon, elemInfoList, ordinateList, pos);
                         break;
 
                     default:
