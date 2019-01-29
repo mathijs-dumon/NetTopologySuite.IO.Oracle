@@ -217,7 +217,7 @@ namespace NetTopologySuite.IO
         private int ProcessPoint(IPoint point, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
-            elemInfoList.Add(1);
+            elemInfoList.Add((int)SdoEType.Coordinate);
             elemInfoList.Add(1);
             return pos + AddOrdinates(point.CoordinateSequence, ordinateList);
         }
@@ -225,7 +225,7 @@ namespace NetTopologySuite.IO
         private int ProcessLinear(ILineString line, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
-            elemInfoList.Add(2);
+            elemInfoList.Add((int)SdoEType.Line);
             elemInfoList.Add(1);
             return pos + AddOrdinates(line.CoordinateSequence, ordinateList);
         }
@@ -233,7 +233,7 @@ namespace NetTopologySuite.IO
         private int ProcessPolygon(IPolygon polygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
-            elemInfoList.Add(1003);
+            elemInfoList.Add((int)SdoEType.PolygonExterior);
             elemInfoList.Add(1);
 
             var exteriorRingCoords = polygon.ExteriorRing.CoordinateSequence;
@@ -245,7 +245,7 @@ namespace NetTopologySuite.IO
             for (int i = 0; i < interiorRingCount; i++)
             {
                 elemInfoList.Add(pos);
-                elemInfoList.Add(2003);
+                elemInfoList.Add((int)SdoEType.PolygonInterior);
                 elemInfoList.Add(1);
 
                 var interiorRingCoords = polygon.GetInteriorRingN(i).CoordinateSequence;
@@ -265,7 +265,7 @@ namespace NetTopologySuite.IO
             // just ProcessPoint for each point, since that would append to elemInfoList multiple
             // times.  instead, elemInfoList gets incremented just once.  *shrugs*.
             elemInfoList.Add(pos);
-            elemInfoList.Add(1);
+            elemInfoList.Add((int)SdoEType.Coordinate);
             elemInfoList.Add(cnt);
 
             for (int i = 0; i < cnt; i++)
