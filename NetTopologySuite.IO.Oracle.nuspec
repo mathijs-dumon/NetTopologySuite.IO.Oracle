@@ -17,7 +17,7 @@
 			<frameworkAssembly assemblyName="System.Data" />
 		</frameworkAssemblies>
 		<dependencies>
-			<dependency id="NetTopologySuite" version="[1.15.1, 2.0.0-A)" />
+			<dependency id="NetTopologySuite.Core" version="[1.15.2, 2.0.0-A)" />
 		</dependencies>
 	</metadata>
 	<files>
