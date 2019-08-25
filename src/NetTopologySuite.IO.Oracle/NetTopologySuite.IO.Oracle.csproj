@@ -1,28 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <SolutionDir Condition=" '$(SolutionDir)' == '' ">$(ProjectDir)..\</SolutionDir>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <PlatformTarget>x86</PlatformTarget>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(SolutionDir)nts.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>false</DelaySign>
   </PropertyGroup>
 
-  <Import Project="$(SolutionDir)\NetTopologySuite.Common.props" />
+  <PropertyGroup Label="Assembly Info">
+    <AssemblyTitle>NetTopologySuite.IO.Oracle</AssemblyTitle>
+  </PropertyGroup>
 
-  <ItemGroup Condition=" '$(RequiresFrameworkAssemblyReferences)' == 'true' ">
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-  </ItemGroup>
+  <PropertyGroup Label="NuGet Package Info">
+    <PackageId>NetTopologySuite.IO.Oracle</PackageId>
+    <Title>NetTopologySuite IO Library for Oracle</Title>
+    <Authors>NetTopologySuite - Team;Holger Laebe</Authors>
+    <Owners>NetTopologySuite - Team;Holger Laebe</Owners>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <PackageIconUrl>https://raw.githubusercontent.com/NetTopologySuite/GeoAPI/master/icon.png</PackageIconUrl>
+    <Description>This package contains the Oracle IO library with experimental writer implementation</Description>
+    <PackageTags>NTS;Oracle</PackageTags>
+  </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SolutionDir)SharedAssemblyVersion.cs" Link="Properties\SharedAssemblyVersion.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="GeoAPI" Version="1.7.5" />
-    <PackageReference Include="NetTopologySuite.Core" Version="[1.15.2, 2.0.0-A)" />
+    <PackageReference Include="NetTopologySuite" Version="[2.0.0-pre001, 3.0.0-A)" />
     <PackageReference Include="odp.net.x86" Version="112.3.20" />
   </ItemGroup>
 </Project>

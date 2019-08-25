@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Sdo;
 
 namespace NetTopologySuite.IO
@@ -17,23 +17,23 @@ namespace NetTopologySuite.IO
         /// </summary>
         public int SRID { get; set; } = SridNull;
 
-        private int Dimension(IGeometry geom)
+        private int Dimension(Geometry geom)
         {
             return double.IsNaN(geom.Coordinate.Z) ? 2 : 3;
         }
 
-        private int GType(IGeometry geom)
+        private int GType(Geometry geom)
         {
             return Dimension(geom) * 1000 + (int)Template(geom);
         }
 
         /// <summary>
-        /// Converts an IGeometry to the corresponding Oracle UDT of type SdoGeometry
+        /// Converts an Geometry to the corresponding Oracle UDT of type SdoGeometry
         /// it returns null, if conversion fails
         /// </summary>
         /// <param name="geometry"></param>
         /// <returns>SdoGeometry</returns>
-        public SdoGeometry Write(IGeometry geometry)
+        public SdoGeometry Write(Geometry geometry)
         {
             if (geometry?.IsEmpty != false)
             {
@@ -42,25 +42,25 @@ namespace NetTopologySuite.IO
 
             switch (geometry)
             {
-                case IPoint point:
+                case Point point:
                     return Write(point);
 
-                case ILineString line:
+                case LineString line:
                     return Write(line);
 
-                case IPolygon polygon:
+                case Polygon polygon:
                     return Write(polygon);
 
-                case IMultiPoint multiPoint:
+                case MultiPoint multiPoint:
                     return Write(multiPoint);
 
-                case IMultiLineString multiLineString:
+                case MultiLineString multiLineString:
                     return Write(multiLineString);
 
-                case IMultiPolygon multiPolygon:
+                case MultiPolygon multiPolygon:
                     return Write(multiPolygon);
 
-                case IGeometryCollection collection:
+                case GeometryCollection collection:
                     return Write(collection);
 
                 default:
@@ -68,7 +68,7 @@ namespace NetTopologySuite.IO
             }
         }
 
-        private SdoGeometry Write(IPoint point)
+        private SdoGeometry Write(Point point)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -84,7 +84,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(ILineString line)
+        private SdoGeometry Write(LineString line)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -100,7 +100,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(IPolygon polygon)
+        private SdoGeometry Write(Polygon polygon)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -116,7 +116,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(IMultiPoint multiPoint)
+        private SdoGeometry Write(MultiPoint multiPoint)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -132,7 +132,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(IMultiLineString multiLineString)
+        private SdoGeometry Write(MultiLineString multiLineString)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -148,7 +148,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(IMultiPolygon multiPolygon)
+        private SdoGeometry Write(MultiPolygon multiPolygon)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -164,7 +164,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private SdoGeometry Write(IGeometryCollection geometryCollection)
+        private SdoGeometry Write(GeometryCollection geometryCollection)
         {
             var elemInfoList = new List<decimal>();
             var ordinateList = new List<decimal>();
@@ -177,27 +177,27 @@ namespace NetTopologySuite.IO
                 switch (geom.OgcGeometryType)
                 {
                     case OgcGeometryType.Point:
-                        pos = ProcessPoint((IPoint)geom, elemInfoList, ordinateList, pos);
+                        pos = ProcessPoint((Point)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.LineString:
-                        pos = ProcessLinear((ILineString)geom, elemInfoList, ordinateList, pos);
+                        pos = ProcessLinear((LineString)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.Polygon:
-                        pos = ProcessPolygon((IPolygon)geom, elemInfoList, ordinateList, pos);
+                        pos = ProcessPolygon((Polygon)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiPoint:
-                        pos = ProcessMultiPoint((IMultiPoint)geom, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiPoint((MultiPoint)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiLineString:
-                        pos = ProcessMultiLineString((IMultiLineString)geom, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiLineString((MultiLineString)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     case OgcGeometryType.MultiPolygon:
-                        pos = ProcessMultiPolygon((IMultiPolygon)geom, elemInfoList, ordinateList, pos);
+                        pos = ProcessMultiPolygon((MultiPolygon)geom, elemInfoList, ordinateList, pos);
                         break;
 
                     default:
@@ -214,7 +214,7 @@ namespace NetTopologySuite.IO
             };
         }
 
-        private int ProcessPoint(IPoint point, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessPoint(Point point, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
             elemInfoList.Add((int)SdoEType.Coordinate);
@@ -222,7 +222,7 @@ namespace NetTopologySuite.IO
             return pos + AddOrdinates(point.CoordinateSequence, ordinateList);
         }
 
-        private int ProcessLinear(ILineString line, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessLinear(LineString line, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
             elemInfoList.Add((int)SdoEType.Line);
@@ -230,7 +230,7 @@ namespace NetTopologySuite.IO
             return pos + AddOrdinates(line.CoordinateSequence, ordinateList);
         }
 
-        private int ProcessPolygon(IPolygon polygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessPolygon(Polygon polygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             elemInfoList.Add(pos);
             elemInfoList.Add((int)SdoEType.PolygonExterior);
@@ -257,11 +257,11 @@ namespace NetTopologySuite.IO
             return pos;
         }
 
-        private int ProcessMultiPoint(IMultiPoint multiPoint, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessMultiPoint(MultiPoint multiPoint, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             int cnt = multiPoint.NumGeometries;
 
-            // (airbreather 2019-01-29) for some reason, IMultiPoint seems to be special: it's not
+            // (airbreather 2019-01-29) for some reason, MultiPoint seems to be special: it's not
             // just ProcessPoint for each point, since that would append to elemInfoList multiple
             // times.  instead, elemInfoList gets incremented just once.  *shrugs*.
             elemInfoList.Add(pos);
@@ -270,38 +270,38 @@ namespace NetTopologySuite.IO
 
             for (int i = 0; i < cnt; i++)
             {
-                var point = (IPoint)multiPoint.GetGeometryN(i);
+                var point = (Point)multiPoint.GetGeometryN(i);
                 pos += AddOrdinates(point.CoordinateSequence, ordinateList);
             }
 
             return pos;
         }
 
-        private int ProcessMultiLineString(IMultiLineString multiLineString, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessMultiLineString(MultiLineString multiLineString, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             int cnt = multiLineString.NumGeometries;
             for (int i = 0; i < cnt; i++)
             {
-                var line = (ILineString)multiLineString.GetGeometryN(i);
+                var line = (LineString)multiLineString.GetGeometryN(i);
                 pos += ProcessLinear(line, elemInfoList, ordinateList, pos);
             }
 
             return pos;
         }
 
-        private int ProcessMultiPolygon(IMultiPolygon multiPolygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
+        private int ProcessMultiPolygon(MultiPolygon multiPolygon, List<decimal> elemInfoList, List<decimal> ordinateList, int pos)
         {
             int cnt = multiPolygon.NumGeometries;
             for (int i = 0; i < cnt; i++)
             {
-                var poly = (IPolygon)multiPolygon.GetGeometryN(i);
+                var poly = (Polygon)multiPolygon.GetGeometryN(i);
                 pos = ProcessPolygon(poly, elemInfoList, ordinateList, pos);
             }
 
             return pos;
         }
 
-        private int AddOrdinates(ICoordinateSequence sequence, List<decimal> ords)
+        private int AddOrdinates(CoordinateSequence sequence, List<decimal> ords)
         {
             int dimension = sequence.Dimension;
             int numOfPoints = sequence.Count;
@@ -311,14 +311,14 @@ namespace NetTopologySuite.IO
                 ords.Add((decimal)sequence.GetY(i));
                 if (dimension == 3)
                 {
-                    ords.Add((decimal)sequence.GetOrdinate(i, Ordinate.Z));
+                    ords.Add((decimal)sequence.GetZ(i));
                 }
             }
 
             return numOfPoints * dimension;
         }
 
-        private int AddOrdinatesInReverse(ICoordinateSequence sequence, List<decimal> ords)
+        private int AddOrdinatesInReverse(CoordinateSequence sequence, List<decimal> ords)
         {
             int dimension = sequence.Dimension;
             int numOfPoints = sequence.Count;
@@ -329,39 +329,39 @@ namespace NetTopologySuite.IO
                 ords.Add((decimal)sequence.GetY(i));
                 if (dimension == 3)
                 {
-                    ords.Add((decimal)sequence.GetOrdinate(i, Ordinate.Z));
+                    ords.Add((decimal)sequence.GetZ(i));
                 }
             }
 
             return numOfPoints * dimension;
         }
 
-        private SdoGTemplate Template(IGeometry geom)
+        private SdoGTemplate Template(Geometry geom)
         {
             switch (geom)
             {
                 case null:
                     return SdoGTemplate.Unknown;
 
-                case IPoint _:
+                case Point _:
                     return SdoGTemplate.Coordinate;
 
-                case ILineString _:
+                case LineString _:
                     return SdoGTemplate.Line;
 
-                case IPolygon _:
+                case Polygon _:
                     return SdoGTemplate.Polygon;
 
-                case IMultiPoint _:
+                case MultiPoint _:
                     return SdoGTemplate.MultiPoint;
 
-                case IMultiLineString _:
+                case MultiLineString _:
                     return SdoGTemplate.MultiLine;
 
-                case IMultiPolygon _:
+                case MultiPolygon _:
                     return SdoGTemplate.MultiPolygon;
 
-                case IGeometryCollection _:
+                case GeometryCollection _:
                     return SdoGTemplate.Collection;
 
                 default:
