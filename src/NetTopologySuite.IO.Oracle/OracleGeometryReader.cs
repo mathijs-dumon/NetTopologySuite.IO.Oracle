@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Sdo;
 
@@ -15,17 +14,17 @@ namespace NetTopologySuite.IO
             : this(GeometryFactory.Default)
         { }
 
-        public OracleGeometryReader(IGeometryFactory factory)
+        public OracleGeometryReader(GeometryFactory factory)
         {
             _factory = factory;
         }
 
-        private readonly IGeometryFactory _factory;
+        private readonly GeometryFactory _factory;
 
         public int Dimension { get; set; } = -1;
 
 
-        public IGeometry Read(SdoGeometry geom)
+        public Geometry Read(SdoGeometry geom)
         {
 
             //Note: Returning null for null Datum
@@ -46,7 +45,7 @@ namespace NetTopologySuite.IO
             return retVal;
         }
 
-        private IGeometry Create(int gType, SdoPoint point, Decimal[] elemInfo, Decimal[] ordinates)
+        private Geometry Create(int gType, SdoPoint point, Decimal[] elemInfo, Decimal[] ordinates)
         {
             int lrs = (gType % 1000) / 100;
 
@@ -141,8 +140,8 @@ namespace NetTopologySuite.IO
             {
                 var pt = new List<Coordinate>(1)
                              {
-                                 new Coordinate((Double) ordinates[0], (Double) ordinates[1],
-                                                (Double) ordinates[2])
+                                 new CoordinateZ((Double) ordinates[0], (Double) ordinates[1],
+                                                 (Double) ordinates[2])
                              };
                 return pt;
             }
@@ -169,11 +168,11 @@ namespace NetTopologySuite.IO
                 switch (len)
                 {
                     case 2:
-                        pts.Add(new Coordinate((Double)ordinates[offset], (Double)ordinates[offset + 1], Double.NaN));
+                        pts.Add(new CoordinateZ((Double)ordinates[offset], (Double)ordinates[offset + 1], Double.NaN));
                         break;
                     case 3:
-                        pts.Add(new Coordinate((Double)ordinates[offset], (Double)ordinates[offset + 1],
-                                               (Double)ordinates[offset + 2]));
+                        pts.Add(new CoordinateZ((Double)ordinates[offset], (Double)ordinates[offset + 1],
+                                                (Double)ordinates[offset + 2]));
                         break;
                 }
 
@@ -193,7 +192,7 @@ namespace NetTopologySuite.IO
             return pts;
         }
 
-        private IGeometryCollection CreateCollection(int dim, int lrs, Decimal[] elemInfo, int elemIndex,
+        private GeometryCollection CreateCollection(int dim, int lrs, Decimal[] elemInfo, int elemIndex,
                                                     List<Coordinate> coords, int numGeom)
         {
 
@@ -207,10 +206,10 @@ namespace NetTopologySuite.IO
 
             int endTriplet = (numGeom != -1) ? elemIndex + numGeom : elemInfo.Length / 3 + 1;
 
-            var list = new List<IGeometry>();
+            var list = new List<Geometry>();
             SdoEType etype;
             int interpretation;
-            IGeometry geom = null;
+            Geometry geom = null;
 
             Boolean cont = true;
             for (int i = elemIndex; cont && i < endTriplet; i++)
@@ -273,7 +272,7 @@ namespace NetTopologySuite.IO
             return geoms;
         }
 
-        private IMultiPolygon CreateMultiPolygon(int dim, int lrs, decimal[] elemInfo, int elemIndex,
+        private MultiPolygon CreateMultiPolygon(int dim, int lrs, decimal[] elemInfo, int elemIndex,
                                                 List<Coordinate> coords, int numGeom)
         {
 
@@ -297,7 +296,7 @@ namespace NetTopologySuite.IO
 
             int endTriplet = (numGeom != -1) ? elemIndex + numGeom : (elemInfo.Length / 3) + 1;
 
-            var list = new List<IPolygon>();
+            var list = new List<Polygon>();
             Boolean cont = true;
 
             for (int i = elemIndex; cont && i < endTriplet && (etype = EType(elemInfo, i)) != SdoEType.Unknown; i++)
@@ -320,7 +319,7 @@ namespace NetTopologySuite.IO
             return polys;
         }
 
-        private IMultiLineString CreateMultiLine(int dim, int lrs, Decimal[] elemInfo, int elemIndex,
+        private MultiLineString CreateMultiLine(int dim, int lrs, Decimal[] elemInfo, int elemIndex,
                                                 List<Coordinate> coords, int numGeom)
         {
 
@@ -343,7 +342,7 @@ namespace NetTopologySuite.IO
 
             int endTriplet = (numGeom != -1) ? (elemIndex + numGeom) : (elemInfo.Length / 3);
 
-            var list = new List<ILineString>();
+            var list = new List<LineString>();
 
             Boolean cont = true;
             for (int i = elemIndex; cont && i < endTriplet && (etype = EType(elemInfo, i)) != SdoEType.Unknown; i++)
@@ -364,7 +363,7 @@ namespace NetTopologySuite.IO
             return lines;
         }
 
-        private IMultiPoint CreateMultiPoint(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
+        private MultiPoint CreateMultiPoint(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
             int sOffset = StartingOffset(elemInfo, elemIndex);
             SdoEType etype = EType(elemInfo, elemIndex);
@@ -390,7 +389,7 @@ namespace NetTopologySuite.IO
             return points;
         }
 
-        private IPolygon CreatePolygon(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
+        private Polygon CreatePolygon(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
 
             int sOffset = StartingOffset(elemInfo, elemIndex);
@@ -415,7 +414,7 @@ namespace NetTopologySuite.IO
 
             var exteriorRing = CreateLinearRing(dim, lrs, elemInfo, elemIndex, coords);
 
-            var rings = new List<ILinearRing>();
+            var rings = new List<LinearRing>();
 
             Boolean cont = true;
             for (int i = elemIndex + 1; cont && (etype = EType(elemInfo, i)) != SdoEType.Unknown; i++)
@@ -455,7 +454,7 @@ namespace NetTopologySuite.IO
         }
 
 
-        private ILinearRing CreateLinearRing(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
+        private LinearRing CreateLinearRing(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
 
             int
@@ -477,7 +476,7 @@ namespace NetTopologySuite.IO
             {
                 return null;
             }
-            ILinearRing ring;
+            LinearRing ring;
 
             int len = (dim + lrs);
             int start = (sOffset - 1) / len;
@@ -508,7 +507,7 @@ namespace NetTopologySuite.IO
         }
 
 
-        private ILineString CreateLine(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
+        private LineString CreateLine(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
 
             int
@@ -545,12 +544,12 @@ namespace NetTopologySuite.IO
         {
             var pts = new List<Coordinate>(input.Count);
             foreach (Coordinate point in input)
-                pts.Add(new Coordinate(point.X, point.Y, point.Z));
+                pts.Add(new CoordinateZ(point.X, point.Y, point.Z));
 
             return pts.ToArray();
         }
 
-        private IPoint CreatePoint(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
+        private Point CreatePoint(int dim, int lrs, Decimal[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
             int sOffset = StartingOffset(elemInfo, elemIndex);
             SdoEType etype = EType(elemInfo, elemIndex);

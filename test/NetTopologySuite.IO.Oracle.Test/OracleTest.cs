@@ -1,10 +1,4 @@
-﻿using GeoAPI.IO;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Oracle.Test
 {
@@ -16,7 +10,7 @@ namespace NetTopologySuite.IO.Oracle.Test
     {
 
         private static readonly OracleGeometryReader or = new OracleGeometryReader();
-        private static readonly WKTReader wr = new WKTReader();
+        private static readonly WKTReader wr = new WKTReader { IsOldNtsCoordinateSyntaxAllowed = false };
 
         /// <summary>
         /// 
@@ -42,26 +36,26 @@ namespace NetTopologySuite.IO.Oracle.Test
         /// <param name="srid"></param>
         [TestCase("POINT(10 10)", -1)]
         [TestCase("POINT(10 10)", 4326)]
-        [TestCase("POINT(10 10 0)", -1)]
-        [TestCase("POINT(10 10 20)", -1)]
+        [TestCase("POINT Z(10 10 0)", -1)]
+        [TestCase("POINT Z(10 10 20)", -1)]
         [TestCase("MULTIPOINT(11 12, 20 20)", -1)]
-        [TestCase("MULTIPOINT(11 12 12, 20 20 20)", -1)]
+        [TestCase("MULTIPOINT Z(11 12 12, 20 20 20)", -1)]
         [TestCase("LINESTRING(10 10,20 20,50 50,34 34)", -1)]
-        [TestCase("LINESTRING(10 10 20,20 20 20,50 50 50,34 34 34)", -1)]
+        [TestCase("LINESTRING Z(10 10 20,20 20 20,50 50 50,34 34 34)", -1)]
         [TestCase("POLYGON((10 10,20 10,20 20,10 20,10 10))", -1)]
         [TestCase("POLYGON((10 10,20 10,20 20,10 20,10 10),(5 5,5 6,6 6,6 5,5 5))", -1)]
-        [TestCase("POLYGON((10 10 0,20 10 0,20 20 0,10 20 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0))", -1)]
+        [TestCase("POLYGON Z((10 10 0,20 10 0,20 20 0,10 20 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0))", -1)]
         [TestCase("MULTIPOLYGON(((10 10,20 10,20 20,20 10,10 10)),((10 10,20 10,20 20,20 10,10 10)))", -1)]
         [TestCase("MULTIPOLYGON(((10 10,20 10,20 20,10 20,10 10),(5 5,5 6,6 6,6 5,5 5)),((10 10,20 10,20 20,20 10,10 10)))", -1)]
         [TestCase("MULTIPOLYGON(((10 10,20 10,20 20,10 20,10 10),(5 5,5 6,6 6,6 5,5 5)),((10 10,20 10,20 20,20 10,10 10),(5 5,5 6,6 6,6 5,5 5)))", -1)]
-        [TestCase("MULTIPOLYGON(((10 10 0,20 10 0,20 20 0,10 20 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0)),((10 10 0,20 10 0,20 20 0,20 10 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0)))", -1)]
+        [TestCase("MULTIPOLYGON Z(((10 10 0,20 10 0,20 20 0,10 20 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0)),((10 10 0,20 10 0,20 20 0,20 10 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0)))", -1)]
         [TestCase("MULTILINESTRING((10 10,20 10,20 20,20 10),(5 5,5 6,6 6,6 5))", -1)]
-        [TestCase("MULTILINESTRING((10 10 5,20 10 5,20 20 0,20 10 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0))", -1)]
+        [TestCase("MULTILINESTRING Z((10 10 5,20 10 5,20 20 0,20 10 0,10 10 0),(5 5 0,5 6 0,6 6 0,6 5 0,5 5 0))", -1)]
         [TestCase("GEOMETRYCOLLECTION(POLYGON((10 10,20 10,20 20,10 20,10 10)),POLYGON((30 10,40 10,40 20,30 20,30 10)))", -1)]
         [TestCase("GEOMETRYCOLLECTION(POLYGON((10 10,20 10,20 20,10 20,10 10),(5 5,5 6,6 6,6 5,5 5)))", -1)]
         [TestCase("GEOMETRYCOLLECTION(POLYGON((10 10,20 10,20 20,10 20,10 10),(5 5,5 6,6 6,6 5,5 5)),LINESTRING(10 10,20 20,50 50,34 34))", -1)]
         [TestCase("GEOMETRYCOLLECTION(POINT(10 10),LINESTRING(10 10,20 20,50 50,34 34))", -1)]
-        [TestCase("GEOMETRYCOLLECTION(POINT(10 10),MULTIPOINT(11 12, 20 20))", -1)]        
+        [TestCase("GEOMETRYCOLLECTION(POINT(10 10),MULTIPOINT(11 12, 20 20))", -1)]
         public void BasicConversion(string wkt, int srid)
         {
             var geom = wr.Read(wkt);
