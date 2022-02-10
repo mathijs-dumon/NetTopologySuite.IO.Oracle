@@ -1,0 +1,29 @@
+name: .NET
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Pull and run Oracle XE 11g
+      run: docker pull oracleinanutshell/oracle-xe-11g
+    - name: Run Oracle XE 11g docker image
+      run: docker run -d -p 49161:1521 oracleinanutshell/oracle-xe-11g
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
