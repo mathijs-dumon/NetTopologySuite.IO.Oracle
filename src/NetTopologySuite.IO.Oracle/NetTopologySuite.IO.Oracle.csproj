@@ -2,8 +2,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <SignAssembly>true</SignAssembly>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
@@ -23,6 +29,6 @@
 
   <ItemGroup>
     <PackageReference Include="NetTopologySuite" Version="[2.0.0, 3.0.0-A)" />
-    <PackageReference Include="odp.net.x86" Version="112.3.20" />
+    <PackageReference Include="Oracle.ManagedDataAccess" Version="21.4.0" />
   </ItemGroup>
 </Project>
