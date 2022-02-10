@@ -1,7 +1,7 @@
 ## Integration tests
 ### Requirements
 In order to perform the tests, a Docker container with an Oracle XE database has to be available.
-One that worked for us is:   
+One that worked for us is [Oracle Express Edition 11g Release 2 on Ubuntu 18.04 LTS](https://hub.docker.com/r/oracleinanutshell/oracle-xe-11g):   
 ```
 docker pull oracleinanutshell/oracle-xe-11g
 ```
