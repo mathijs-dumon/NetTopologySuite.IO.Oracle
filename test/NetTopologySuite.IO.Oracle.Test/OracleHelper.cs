@@ -1,26 +1,41 @@
-﻿using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Client;
 using System.Configuration;
 using System.Data;
 using NUnit.Framework;
 using NetTopologySuite.IO.Sdo;
+using System;
 
 namespace NetTopologySuite.IO.Oracle.Connection.Test
 {
     public static class OracleHelper
     {
-
-        
-
         /// <summary>
         /// Opens a connection to the test database
         /// </summary>
         /// <returns></returns>
-        public static OracleConnection OpenConnection()
+        public static OracleConnection OpenConnection(string connectionString = null)
         {
-            string connectionString = ConfigurationManager.AppSettings.Get("TestDBConnectionString");
-            OracleConnection con = new OracleConnection(connectionString);
-            con.Open();
-            return con;
+            connectionString ??= ConfigurationManager.AppSettings.Get("TestDBConnectionString");
+            try
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    Assert.Ignore("Connection string is empty!");
+                    return null;
+                }
+                //TestContext.Error.WriteLine("Trying to connect with '{0}'", connectionString);
+                var conn = new OracleConnection(connectionString);
+                conn.Open();
+                //TestContext.Error.WriteLine("Connection successful!");
+                //TestContext.Error.WriteLine("Connected to '{0}' on '{1}'.", conn.DatabaseName, conn.DatabaseEditionName);
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                TestContext.Error.WriteLine(ex.Message);
+                TestContext.Error.WriteLine(ex.StackTrace);
+                throw new IgnoreException("Connection to Oracle database server failed", ex);
+            }
         }
 
         /// <summary>
@@ -67,15 +82,14 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         /// Assumption GEO_DATA table exists.
         /// Write a new created Geometry object to the database.
         /// </summary>
-        public static Geometries.Geometry WriteGeometryToTable(string wkt, string testTableName)
+        public static Geometries.Geometry WriteGeometryToTable(OracleConnection connection, string wkt, string testTableName)
         {
-            
-
             var geom = ConvertWKTToGeometry(wkt);
             SdoGeometry udt = ConvertWKTToOracleUDT(geom);
 
-            // Open connection
-            using var connection = OpenConnection();
+            // Open the connection
+            bool wasClosed = connection.State == ConnectionState.Closed;
+            if (wasClosed) connection.Open();
 
             // Drop & Create Geometry table.
             CreateGeometryTable(connection, testTableName);
@@ -93,6 +107,9 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
             };
             command.Parameters.Add(geometryParam);
             command.ExecuteNonQuery();
+
+            // Close connection
+            if (wasClosed) connection.Close();
 
             return geom;
         }
@@ -118,10 +135,11 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         /// Read a newly created Geometry object from the database.
         /// Assumption GEO_DATA table exists.
         /// </summary>
-        public static Geometries.Geometry ReadGeometryFromTable(string testTableName)
+        public static Geometries.Geometry ReadGeometryFromTable(OracleConnection connection, string testTableName)
         {
             // Open connection
-            using var connection = OpenConnection();
+            bool wasClosed = connection.State == ConnectionState.Closed;
+            if (wasClosed) connection.Open();
 
             // Write query string & command
             var queryString = $"SELECT * FROM {testTableName}";
@@ -133,6 +151,9 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
 
             var oracleReader = new OracleGeometryReader();
             var geom2 = oracleReader.Read(res);
+
+            // Close connection
+            if (wasClosed) connection.Close();
 
             return geom2;
         }

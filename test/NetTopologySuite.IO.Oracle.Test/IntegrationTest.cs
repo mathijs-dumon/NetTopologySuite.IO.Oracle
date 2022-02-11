@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using NetTopologySuite.IO;
+using System.Configuration;
 
 namespace NetTopologySuite.IO.Oracle.Connection.Test
 {
@@ -14,9 +15,29 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
     public class IntegrationTest
     {
         private const string testTableName = "NTS_TEST_GEO_DATA";
+        private string _connectionString;
 
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            try
+            {
+                string cns = ConfigurationManager.AppSettings.Get("TestDBConnectionString");
+                TestContext.Error.WriteLine("Trying to connect with '{0}'", cns);
+                using var conn = new OracleConnection(cns);
+                conn.Open();
+                TestContext.Error.WriteLine("Connection successful!");
+                TestContext.Error.WriteLine("Connected to '{0}' on '{1}'.", conn.DatabaseName, conn.DatabaseEditionName);
+                _connectionString = cns;
+            }
+            catch (Exception ex)
+            {
+                TestContext.Error.WriteLine(ex.Message);
+                TestContext.Error.WriteLine(ex.StackTrace);
+                Assert.Ignore("Connection to Oracle database server failed");
+            }
+        }
 
-        [Test]
         /// <summary>
         /// Connect to database, make a table, write to database, read to database, drop table.
         /// Assumption GEO_DATA table exists.
@@ -49,7 +70,7 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         public void TestWritingAndReadingBackFromGeometryTable(string wkt)
         {
             // Open a connection.
-            var connection = OracleHelper.OpenConnection();
+            using var connection = OracleHelper.OpenConnection(_connectionString);
 
             // Make a new table.v
             string res = OracleHelper.CreateGeometryTable(connection, testTableName);
@@ -57,10 +78,10 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
             Assert.IsTrue(!string.IsNullOrWhiteSpace(res));
 
             // Write current geometry to table.
-            var geom = OracleHelper.WriteGeometryToTable(wkt, testTableName);
+            var geom = OracleHelper.WriteGeometryToTable(connection, wkt, testTableName);
 
             // Read current geometry from table.
-            var geom2 = OracleHelper.ReadGeometryFromTable(testTableName);
+            var geom2 = OracleHelper.ReadGeometryFromTable(connection, testTableName);
 
             Assert.IsTrue(geom.EqualsExact(geom2));
 
