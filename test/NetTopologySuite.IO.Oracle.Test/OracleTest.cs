@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Oracle.Test
 {
@@ -9,7 +9,7 @@ namespace NetTopologySuite.IO.Oracle.Test
     public class OracleTest
     {
 
-        private static readonly OracleGeometryReader or = new OracleGeometryReader();
+        private static readonly OracleGeometryReader or = new OracleGeometryReader(NtsGeometryServices.Instance);
         private static readonly WKTReader wr = new WKTReader { IsOldNtsCoordinateSyntaxAllowed = false };
 
         /// <summary>
