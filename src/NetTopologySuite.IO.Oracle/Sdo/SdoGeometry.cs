@@ -4,6 +4,7 @@ using Oracle.ManagedDataAccess.Types;
 
 namespace NetTopologySuite.IO.Sdo
 {
+#pragma warning disable 1591
     [OracleCustomTypeMapping("MDSYS.SDO_GEOMETRY")]
     public class SdoGeometry : OracleCustomTypeBase<SdoGeometry>
     {
@@ -165,4 +166,5 @@ namespace NetTopologySuite.IO.Sdo
             }
         }
     }
+#pragma warning restore 1591
 }

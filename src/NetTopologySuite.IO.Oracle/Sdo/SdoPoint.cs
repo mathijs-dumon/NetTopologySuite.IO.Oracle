@@ -1,8 +1,9 @@
-﻿using NetTopologySuite.IO.UdtBase;
+using NetTopologySuite.IO.UdtBase;
 using Oracle.ManagedDataAccess.Types;
 
 namespace NetTopologySuite.IO.Sdo
 {
+#pragma warning disable 1591
     [OracleCustomTypeMapping("MDSYS.SDO_POINT_TYPE")]
     public class SdoPoint : OracleCustomTypeBase<SdoPoint>
     {
@@ -29,4 +30,5 @@ namespace NetTopologySuite.IO.Sdo
             Z = GetValue<double?>("Z");
         }
     }
+#pragma warning restore 1591
 }

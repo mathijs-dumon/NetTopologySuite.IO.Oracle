@@ -1,5 +1,6 @@
 namespace NetTopologySuite.IO.Sdo
 {
+#pragma warning disable 1591
     internal enum SdoGTemplate
     {
         Unknown = -1,
@@ -12,4 +13,5 @@ namespace NetTopologySuite.IO.Sdo
         MultiLine = 6,
         MultiPolygon = 7,
     }
+#pragma warning restore 1591
 }
