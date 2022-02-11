@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using Oracle.ManagedDataAccess.Types;
 using Oracle.ManagedDataAccess.Client;
 
 namespace NetTopologySuite.IO.UdtBase
 {
+#pragma warning disable 1591
     public abstract class OracleCustomTypeBase<T> : INullable, IOracleCustomType, IOracleCustomTypeFactory
         where T : OracleCustomTypeBase<T>, new()
     {
@@ -91,4 +92,5 @@ namespace NetTopologySuite.IO.UdtBase
             return (TUser)OracleUdt.GetValue(_connection, _pObject, oracleColumnId);
         }
     }
+#pragma warning restore 1591
 }
