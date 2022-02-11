@@ -1,27 +1,71 @@
 ## Usage
 
-### Reading
+### Writing example
 ```C#
-// SdoGeometry from somewhere, e.g. OracleDataReader or OracleCommand.ExecuteScalar()
-SdoGeometry oracleGeom;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Sdo;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
 
-// Instantiate OracleGeometryReader
-var ogr = new NetTopologySuite.IO.OracleGeometryReader(NetTopologySuite.NtsGeometryServices.Instance);
+...
 
-// Transform geometry
-var ntsGeom = ogr.Read(oracleGeom);
+  // Create a NTS geometry object from WKT - or get it in another way
+  var wr = new WKTReader();
+  Geometry geom = wr.Read(" wkt goes here ");
+
+  // Write NTS geometry to an Oracle UDT object:
+  var oracleWriter = new OracleGeometryWriter();
+  SdoGeometry udt = oracleWriter.Write(geom);
+
+  // Open connection
+  using var con = new OracleConnection("your-connectionstring-goes-here");
+  con.Open();
+
+  // Adapt query to suit your needs
+  var queryString = $"INSERT INTO TEST_TABLE (data) VALUES (:geo)";
+  using OracleCommand command = new OracleCommand(queryString, con);
+
+  var geometryParam = new OracleParameter()
+  {
+      Direction = ParameterDirection.Input,
+      ParameterName = "geo", // needs to match with the parameter name in the query
+      Value = udt,
+      DbType = DbType.Object, // this is important!
+      UdtTypeName = "MDSYS.SDO_GEOMETRY" // so is this!
+  };
+  command.Parameters.Add(geometryParam);
+  command.ExecuteNonQuery();
+  
+...
+
 ```
 
-### Writing
+### Reading example
 ```C#
-// NTS geometry from somewhere
-Geometry ntsGeom;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Sdo;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
 
-// Instantiate OracleGeometryWriter
-var ogw = new NetTopologySuite.IO.OracleGeometryWriter();
+...
 
-// Transform geometry
-var oracleGeom = ogw.Write(ntsGeom);
+  // Open connection
+  using var con = new OracleConnection("your-connectionstring-goes-here");
+  con.Open();
+
+  // Adapt query to suit your needs
+  var queryString = $"SELECT data FROM TEST_TABLE";
+  using OracleCommand command = new OracleCommand(queryString, con);
+
+  // Execute query & cast the column value
+  var res = (SdoGeometry) command.ExecuteScalar();
+
+  // Convert the UDT object to an NTS geometry:
+  var oracleReader = new OracleGeometryReader();
+  var geom = oracleReader.Read(res);
+  
+...
+
 ```
 
 ## Integration tests
