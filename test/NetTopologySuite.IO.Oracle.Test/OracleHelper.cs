@@ -48,12 +48,12 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         {
             DropGeometryTable(connection, tableName);
 
-            var queryString = $"CREATE TABLE {tableName} (data MSYS.SDO_GEOMETRY)";
-            using OracleCommand command = new OracleCommand(queryString, connection);
+            string queryString = $"CREATE TABLE {tableName} (data MSYS.SDO_GEOMETRY)";
+            using var command = new OracleCommand(queryString, connection);
             command.ExecuteNonQuery();
 
-            var queryString2 = $"SELECT TABLE_NAME FROM sys.all_tables WHERE TABLE_NAME = '{tableName}'";
-            using OracleCommand command2 = new OracleCommand(queryString2, connection);
+            string queryString2 = $"SELECT TABLE_NAME FROM sys.all_tables WHERE TABLE_NAME = '{tableName}'";
+            using var command2 = new OracleCommand(queryString2, connection);
             return (string)command2.ExecuteScalar();
         }
 
@@ -65,7 +65,7 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         public static void DropGeometryTable(OracleConnection connection, string tableName)
         {
             // Remove 'GEO_DATA' table
-            var queryString = $@"BEGIN
+            string queryString = $@"BEGIN
                 EXECUTE IMMEDIATE 'DROP TABLE {tableName}';
                 EXCEPTION
                     WHEN OTHERS THEN
@@ -73,7 +73,7 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
                             RAISE;
                         END IF;
                 END;";
-            using OracleCommand command = new OracleCommand(queryString, connection);
+            using var command = new OracleCommand(queryString, connection);
             command.ExecuteNonQuery();
         }
 
@@ -85,7 +85,7 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         public static Geometries.Geometry WriteGeometryToTable(OracleConnection connection, string wkt, string testTableName)
         {
             var geom = ConvertWKTToGeometry(wkt);
-            SdoGeometry udt = ConvertWKTToOracleUDT(geom);
+            var udt = ConvertGeomToOracleUDT(geom);
 
             // Open the connection
             bool wasClosed = connection.State == ConnectionState.Closed;
@@ -94,9 +94,9 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
             // Drop & Create Geometry table.
             CreateGeometryTable(connection, testTableName);
 
-            var queryString = $"INSERT INTO {testTableName} (data) VALUES (:geo)";
+            string queryString = $"INSERT INTO {testTableName} (data) VALUES (:geo)";
 
-            using OracleCommand command = new OracleCommand(queryString, connection);
+            using var command = new OracleCommand(queryString, connection);
             var geometryParam = new OracleParameter()
             {
                 ParameterName = "geo",
@@ -114,7 +114,7 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
             return geom;
         }
 
-        private static Sdo.SdoGeometry ConvertWKTToOracleUDT(Geometries.Geometry geom)
+        private static Sdo.SdoGeometry ConvertGeomToOracleUDT(Geometries.Geometry geom)
         {
             // Write geometry object into UDT object.
             var oracleWriter = new OracleGeometryWriter();
@@ -126,7 +126,7 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
         {
             // Read WKT into geometry object.
             var wr = new WKTReader { IsOldNtsCoordinateSyntaxAllowed = false };
-            var correctCCW = wkt;
+            string correctCCW = wkt;
             var geom = wr.Read(correctCCW);
             return geom;
         }
@@ -142,14 +142,14 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
             if (wasClosed) connection.Open();
 
             // Write query string & command
-            var queryString = $"SELECT * FROM {testTableName}";
-            using OracleCommand command = new OracleCommand(queryString, connection);
+            string queryString = $"SELECT * FROM {testTableName}";
+            using var command = new OracleCommand(queryString, connection);
 
             var geometryParam = new OracleParameter();
             command.Parameters.Add(geometryParam);
             var res = (SdoGeometry) command.ExecuteScalar();
 
-            var oracleReader = new OracleGeometryReader();
+            var oracleReader = new OracleGeometryReader(NtsGeometryServices.Instance);
             var geom2 = oracleReader.Read(res);
 
             // Close connection

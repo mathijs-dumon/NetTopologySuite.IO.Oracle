@@ -88,10 +88,5 @@ namespace NetTopologySuite.IO.Oracle.Connection.Test
             // Drop Geometry table
             OracleHelper.DropGeometryTable(connection, testTableName);
         }
-
-
     }
-
-
-
 }

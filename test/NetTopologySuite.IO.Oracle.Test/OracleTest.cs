@@ -18,8 +18,8 @@ namespace NetTopologySuite.IO.Oracle.Test
         [Test]
         public void CCWTestsOnPolygon()
         {
-            var wrongCCW = "POLYGON((10 10, 10 20, 20 20, 20 10, 10 10),(5 5,6 5,6 6,5 6,5 5))";
-            var correctCCW = "POLYGON((10 10, 20 10, 20 20, 10 20, 10 10),(5 5,5 6,6 6,6 5,5 5))";
+            string wrongCCW = "POLYGON((10 10, 10 20, 20 20, 20 10, 10 10),(5 5,6 5,6 6,5 6,5 5))";
+            string correctCCW = "POLYGON((10 10, 20 10, 20 20, 10 20, 10 10),(5 5,5 6,6 6,6 5,5 5))";
 
             var geom1 = wr.Read(wrongCCW);
             var geom2 = wr.Read(correctCCW);
@@ -59,9 +59,9 @@ namespace NetTopologySuite.IO.Oracle.Test
         public void BasicConversion(string wkt, int srid)
         {
             var geom = wr.Read(wkt);
-            var parsed = geom.AsText();
+            string parsed = geom.AsText();
             var regeom = wr.Read(parsed);
-            var reparsed = regeom.AsText();
+            string reparsed = regeom.AsText();
 
             geom.SRID = srid;
             regeom.SRID = srid;
