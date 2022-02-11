@@ -6,6 +6,9 @@ using NetTopologySuite.IO.Sdo;
 
 namespace NetTopologySuite.IO
 {
+    /// <summary>
+    /// A class for reading Oracle <see cref="SdoGeometry"/> objects
+    /// </summary>
     public class OracleGeometryReader
     {
         private const int NullDimension = -1;
@@ -60,10 +63,10 @@ namespace NetTopologySuite.IO
                 return null;
 
             Debug.Assert(geom.SdoGtype.HasValue);
-            var gType = (int)geom.SdoGtype;
+            int gType = (int)geom.SdoGtype;
 
             Debug.Assert(geom.Sdo_Srid.HasValue);
-            var srid = (int)geom.Sdo_Srid;
+            int srid = (int)geom.Sdo_Srid;
 
             var point = geom.Point;
             var factory = _services.CreateGeometryFactory(srid);
@@ -196,11 +199,11 @@ namespace NetTopologySuite.IO
                 switch (len)
                 {
                     case 2:
-                        pts.Add(new CoordinateZ((Double)ordinates[offset], (Double)ordinates[offset + 1], Double.NaN));
+                        pts.Add(new CoordinateZ(ordinates[offset], ordinates[offset + 1], double.NaN));
                         break;
                     case 3:
-                        pts.Add(new CoordinateZ((Double)ordinates[offset], (Double)ordinates[offset + 1],
-                                                (Double)ordinates[offset + 2]));
+                        pts.Add(new CoordinateZ(ordinates[offset], ordinates[offset + 1],
+                                                ordinates[offset + 2]));
                         break;
                 }
 
@@ -239,7 +242,7 @@ namespace NetTopologySuite.IO
             int interpretation;
             Geometry geom = null;
 
-            Boolean cont = true;
+            bool cont = true;
             for (int i = elemIndex; cont && i < endTriplet; i++)
             {
                 etype = EType(elemInfo, i);
@@ -305,7 +308,7 @@ namespace NetTopologySuite.IO
         {
 
             int sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
 
             int length = coords.Count * dim;
@@ -325,7 +328,7 @@ namespace NetTopologySuite.IO
             int endTriplet = (numGeom != -1) ? elemIndex + numGeom : (elemInfo.Length / 3) + 1;
 
             var list = new List<Polygon>();
-            Boolean cont = true;
+            bool cont = true;
 
             for (int i = elemIndex; cont && i < endTriplet && (etype = EType(elemInfo, i)) != SdoEType.Unknown; i++)
             {
@@ -352,7 +355,7 @@ namespace NetTopologySuite.IO
         {
 
             int sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
 
             int length = coords.Count * dim;
@@ -372,7 +375,7 @@ namespace NetTopologySuite.IO
 
             var list = new List<LineString>();
 
-            Boolean cont = true;
+            bool cont = true;
             for (int i = elemIndex; cont && i < endTriplet && (etype = EType(elemInfo, i)) != SdoEType.Unknown; i++)
             {
                 if (etype == SdoEType.Line)
@@ -394,7 +397,7 @@ namespace NetTopologySuite.IO
         private MultiPoint CreateMultiPoint(GeometryFactory factory, int dim, int lrs, double[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
             int sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
 
             if (!(sOffset >= 1) || !(sOffset <= coords.Count))
@@ -421,7 +424,7 @@ namespace NetTopologySuite.IO
         {
 
             int sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
 
             if (!(1 <= sOffset && sOffset <= (coords.Count * dim)))
@@ -444,7 +447,7 @@ namespace NetTopologySuite.IO
 
             var rings = new List<LinearRing>();
 
-            Boolean cont = true;
+            bool cont = true;
             for (int i = elemIndex + 1; cont && (etype = EType(elemInfo, i)) != SdoEType.Unknown; i++)
             {
                 if (etype == SdoEType.PolygonInterior)
@@ -485,9 +488,8 @@ namespace NetTopologySuite.IO
         private LinearRing CreateLinearRing(GeometryFactory factory, int dim, int lrs, double[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
 
-            int
-        sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            int sOffset = StartingOffset(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
             int length = coords.Count * dim;
 
@@ -519,10 +521,10 @@ namespace NetTopologySuite.IO
             {
                 // interpretation == 3
                 // rectangle does not maintain measures
-                List<Coordinate> pts = new List<Coordinate>(5);
-                List<Coordinate> ptssrc = SubList(coords, start, end);
-                Coordinate min = ptssrc[0];
-                Coordinate max = ptssrc[1];
+                var pts = new List<Coordinate>(5);
+                var ptssrc = SubList(coords, start, end);
+                var min = ptssrc[0];
+                var max = ptssrc[1];
                 pts.AddRange(new[]
                                  {
                                      min, new Coordinate(max.X, min.Y), max, new Coordinate(min.X, max.Y) , min
@@ -538,9 +540,8 @@ namespace NetTopologySuite.IO
         private LineString CreateLine(GeometryFactory factory, int dim, int lrs, double[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
 
-            int
-        sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            int sOffset = StartingOffset(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
 
             if (etype != SdoEType.Line)
@@ -571,7 +572,7 @@ namespace NetTopologySuite.IO
         private static Coordinate[] ToPointArray(ICollection<Coordinate> input)
         {
             var pts = new List<Coordinate>(input.Count);
-            foreach (Coordinate point in input)
+            foreach (var point in input)
                 pts.Add(new CoordinateZ(point.X, point.Y, point.Z));
 
             return pts.ToArray();
@@ -580,7 +581,7 @@ namespace NetTopologySuite.IO
         private Point CreatePoint(GeometryFactory factory, int dim, int lrs, double[] elemInfo, int elemIndex, List<Coordinate> coords)
         {
             int sOffset = StartingOffset(elemInfo, elemIndex);
-            SdoEType etype = EType(elemInfo, elemIndex);
+            var etype = EType(elemInfo, elemIndex);
             int interpretation = Interpretation(elemInfo, elemIndex);
 
             if (!(sOffset >= 1) || !(sOffset <= coords.Count))
